@@ -1,4 +1,4 @@
-name: Validate
+name: Static safety
 
 on:
   push:
@@ -12,139 +12,113 @@ jobs:
     name: Static safety
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
 
       - name: Validate static safety
-        shell: bash
         run: |
-          set -euo pipefail
-
-          fail() {
-            printf 'FAIL: %s\n' "$*" >&2
-            exit 1
-          }
-
-          required=(
-            index.html
-            v2-core.js
-            v2-theme.css
-            CNAME
-            README.md
-            .gitattributes
-            .gitignore
-            .nojekyll
-            .github/workflows/validate.yml
-          )
-          for path in "${required[@]}"; do
-            [[ -f "$path" ]] || fail "missing required file: $path"
-          done
-
-          [[ "$(tr -d '\r\n' < CNAME)" == 'lab.engaz.premiumpower-eg.com' ]] || fail 'CNAME must contain the exact lab hostname'
-
-          # Every checked-in file must be valid UTF-8 and use LF line endings.
-          while IFS= read -r -d '' path; do
-            iconv -f UTF-8 -t UTF-8 "$path" >/dev/null || fail "not strict UTF-8: $path"
-            if LC_ALL=C grep -n $'\r' "$path" >/dev/null; then
-              fail "CRLF line ending found: $path"
-            fi
-          done < <(git ls-files -z)
-
-          # The Pages repo is intentionally static and dependency-free.
-          [[ ! -e package.json && ! -e package-lock.json && ! -e yarn.lock && ! -e pnpm-lock.yaml ]] || fail 'dependency manifest found'
-          if find .github/workflows -maxdepth 1 -type f ! -name validate.yml | grep -q .; then
-            fail 'unexpected workflow found'
-          fi
-          if find . -path './.git' -prune -o -type f -print | LC_ALL=C grep -E '(^|/)(node_modules|\.env($|\.)|.*\.(pem|key)$|.*(credential|secret).*)' >/dev/null; then
-            fail 'forbidden path found'
-          fi
-
-          # Keep browser behavior local; only the four documented navigation URLs are allowed.
-          if rg -n -i '(fetch[[:space:]]*\(|XMLHttpRequest|WebSocket|sendBeacon|localStorage|sessionStorage|indexedDB|document\.cookie|fonts\.googleapis|fonts\.gstatic)' index.html v2-core.js v2-theme.css; then
-            fail 'forbidden browser API or remote font reference found'
-          fi
-
+          git diff --check
           node --check v2-core.js
           node <<'NODE'
+          'use strict';
           const fs = require('node:fs');
-          const os = require('node:os');
           const path = require('node:path');
-          const cp = require('node:child_process');
-          const html = fs.readFileSync('index.html', 'utf8');
-          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
-            .map((match) => match[1].trim())
-            .filter(Boolean);
-          if (scripts.length === 0) throw new Error('no inline script found');
-          const temp = path.join(os.tmpdir(), `engaz-inline-${process.pid}.js`);
-          fs.writeFileSync(temp, `${scripts.join('\n;\n')}\n`, 'utf8');
-          const result = cp.spawnSync(process.execPath, ['--check', temp], {stdio: 'inherit'});
-          fs.rmSync(temp, {force: true});
-          if (result.status !== 0) process.exit(result.status || 1);
-          NODE
+          const vm = require('node:vm');
 
-          node <<'NODE'
-          const fs = require('node:fs');
-          const html = fs.readFileSync('index.html', 'utf8');
-          const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
-          const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
-          if (duplicates.length) throw new Error(`duplicate ids: ${[...new Set(duplicates)].join(', ')}`);
-          const idSet = new Set(ids);
-          const refs = [...html.matchAll(/(?:href|for)=["']#?([A-Za-z][\w-]*)["']/g)].map((match) => match[1]);
-          const missing = refs.filter((ref) => !idSet.has(ref));
-          if (missing.length) throw new Error(`missing local id reference: ${[...new Set(missing)].join(', ')}`);
-          for (const file of ['v2-core.js', 'v2-theme.css']) {
-            if (!html.includes(file)) throw new Error(`missing static reference: ${file}`);
-          }
-          NODE
-
-          node <<'NODE'
-          const fs = require('node:fs');
-          const files = ['index.html', 'v2-core.js', 'v2-theme.css'];
-          const source = files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
-          const allowed = new Set([
+          const required = new Set([
+            '.gitattributes', '.gitignore', '.nojekyll', 'CNAME', 'README.md',
+            'index.html', 'v2-core.js', 'v2-theme.css',
+            '.github/workflows/validate.yml'
+          ]);
+          const allowedUrls = new Set([
             'https://engaz.premiumpower-eg.com/',
             'https://clinic.engaz.premiumpower-eg.com/',
             'https://lab.engaz.premiumpower-eg.com/',
             'https://automation.engaz.premiumpower-eg.com/'
           ]);
-          const urls = [...source.matchAll(/https?:\/\/[^\s"'<>`]+/g)]
+          const failures = [];
+          const fail = (message) => failures.push(message);
+
+          function walk(directory) {
+            const found = [];
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              if (entry.name === '.git') continue;
+              const absolute = path.join(directory, entry.name);
+              if (entry.isDirectory()) found.push(...walk(absolute));
+              else found.push(path.relative('.', absolute).replaceAll(path.sep, '/'));
+            }
+            return found;
+          }
+
+          const files = walk('.');
+          for (const file of files) if (!required.has(file)) fail(`forbidden path: ${file}`);
+          for (const file of required) if (!files.includes(file)) fail(`missing required file: ${file}`);
+          if (fs.readFileSync('CNAME', 'utf8').trim() !== 'lab.engaz.premiumpower-eg.com') fail('unexpected CNAME');
+
+          const decoder = new TextDecoder('utf-8', { fatal: true });
+          for (const file of files) {
+            const bytes = fs.readFileSync(file);
+            try { decoder.decode(bytes); } catch { fail(`invalid UTF-8: ${file}`); }
+            if (bytes.includes(13)) fail(`CR line ending: ${file}`);
+          }
+
+          const html = fs.readFileSync('index.html', 'utf8');
+          const core = fs.readFileSync('v2-core.js', 'utf8');
+          const css = fs.readFileSync('v2-theme.css', 'utf8');
+          const runtime = `${html}\n${core}\n${css}`;
+
+          const forbidden = [
+            [/fonts\.googleapis|fonts\.gstatic|@import\s+url/i, 'remote font'],
+            [/(?:^|[^\d])01[0125]\d{8}(?!\d)/, 'Egyptian mobile number'],
+            [/\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|localStorage|sessionStorage|indexedDB)\b|document\.cookie|\.innerHTML\b|\beval\s*\(/i, 'network, persistence, or unsafe DOM API'],
+            [/-----BEGIN [^-]+ PRIVATE KEY-----|\bAKIA[0-9A-Z]{16}\b|\bgh[pousr]_[A-Za-z0-9]{20,}\b/i, 'credential-like value'],
+            [/(?:api[_-]?key|client[_-]?secret|password|passwd|access[_-]?token)\s*[:=]\s*["']?[A-Za-z0-9/+_.-]{8,}/i, 'credential assignment'],
+            [/L-01\d{2}/, 'legacy order code']
+          ];
+          for (const [pattern, label] of forbidden) if (pattern.test(runtime)) fail(`found ${label}`);
+
+          const oldNames = [
+            'معمل النيل للتحاليل', 'سارة محمود', 'كريم أحمد', 'منى سمير',
+            'محمد علي', 'هبة حسن', 'يوسف طارق', 'آية إبراهيم', 'عمر وليد'
+          ];
+          for (const name of oldNames) if (runtime.includes(name)) fail(`residual original name: ${name}`);
+          for (let index = 1; index <= 8; index += 1) {
+            const digits = String(index).padStart(2, '0').replace(/\d/g, (digit) => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]);
+            if (!html.includes(`مريض تجريبي ${digits}`)) fail(`missing synthetic patient ${digits}`);
+            if (!html.includes(`DEMO-${String(index).padStart(4, '0')}`)) fail(`missing synthetic code ${index}`);
+          }
+
+          const urls = [...runtime.matchAll(/https?:\/\/[^\s"'<>`]+/g)]
             .map((match) => match[0].replace(/[),.;]+$/, ''));
-          const unexpected = urls.filter((url) => !allowed.has(url));
-          if (unexpected.length) throw new Error(`unexpected absolute URL(s): ${[...new Set(unexpected)].join(', ')}`);
-          if (urls.length !== 4) throw new Error(`expected exactly four navigation URLs, found ${urls.length}`);
+          for (const url of urls) if (!allowedUrls.has(url)) fail(`URL outside allowlist: ${url}`);
+          if (urls.length !== 4) fail(`expected four navigation URLs, found ${urls.length}`);
+
+          for (const ref of [...html.matchAll(/\b(?:href|src)\s*=\s*["']([^"']+)["']/gi)].map((match) => match[1])) {
+            if (/^https?:\/\//i.test(ref)) {
+              if (!allowedUrls.has(ref)) fail(`HTML URL outside allowlist: ${ref}`);
+            } else if (ref.startsWith('#')) {
+              continue;
+            } else if (!fs.existsSync(ref.replace(/^\.\//, ''))) {
+              fail(`broken local reference: ${ref}`);
+            }
+          }
+
+          const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
+          if (new Set(ids).size !== ids.length) fail('duplicate HTML id');
+          const idSet = new Set(ids);
+          for (const match of html.matchAll(/\b(?:aria-labelledby|aria-describedby|aria-controls|aria-owns|for)=["']([^"']+)["']/gi)) {
+            for (const id of match[1].split(/\s+/)) if (id && !idSet.has(id)) fail(`missing id reference: ${id}`);
+          }
+
+          const blocks = [...html.matchAll(/<script\b(?![^>]*\bsrc\s*=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+          if (blocks.length !== 1) fail(`expected one inline script, found ${blocks.length}`);
+          else try { new vm.Script(blocks[0], { filename: 'index-inline.js' }); } catch (error) { fail(error.message); }
+
+          if (failures.length) {
+            console.error(failures.join('\n'));
+            process.exit(1);
+          }
+          console.log(`Static safety passed: ${files.length} files checked.`);
           NODE
-
-          # No real names, Egyptian mobile numbers, legacy order codes, or credential markers.
-          old_names=(
-            $'\u0645\u0639\u0645\u0644 \u0627\u0644\u0646\u064a\u0644 \u0644\u0644\u062a\u062d\u0627\u0644\u064a\u0644'
-            $'\u0633\u0627\u0631\u0629 \u0645\u062d\u0645\u0648\u062f'
-            $'\u0643\u0631\u064a\u0645 \u0623\u062d\u0645\u062f'
-            $'\u0645\u0646\u0649 \u0633\u0645\u064a\u0631'
-            $'\u0645\u062d\u0645\u062f \u0639\u0644\u064a'
-            $'\u0647\u0628\u0629 \u062d\u0633\u0646'
-            $'\u064a\u0648\u0633\u0641 \u0637\u0627\u0631\u0642'
-            $'\u0622\u064a\u0629 \u0625\u0628\u0631\u0627\u0647\u064a\u0645'
-            $'\u0639\u0645\u0631 \u0648\u0644\u064a\u062f'
-          )
-          for old_name in "${old_names[@]}"; do
-            if rg -n --fixed-strings "$old_name" index.html v2-core.js v2-theme.css; then
-              fail 'residual personal name found'
-            fi
-          done
-          if rg -n -E '01[0125][0-9]{8}|L-01[0-9]{3}' index.html v2-core.js v2-theme.css; then
-            fail 'residual Egyptian phone number or legacy code found'
-          fi
-          if rg -n -i -E '(api[_-]?key|client[_-]?secret|access[_-]?token|authorization[[:space:]]*[:=]|password[[:space:]]*[:=]|-----begin .*private key-----)' index.html v2-core.js v2-theme.css; then
-            fail 'credential marker found'
-          fi
-
-          for expected in \
-            'مريض تجريبي ٠١' 'مريض تجريبي ٠٢' 'مريض تجريبي ٠٣' 'مريض تجريبي ٠٤' \
-            'مريض تجريبي ٠٥' 'مريض تجريبي ٠٦' 'مريض تجريبي ٠٧' 'مريض تجريبي ٠٨' \
-            DEMO-0001 DEMO-0002 DEMO-0003 DEMO-0004 DEMO-0005 DEMO-0006 DEMO-0007 DEMO-0008; do
-            rg -q --fixed-strings "$expected" index.html || fail "missing synthetic fixture: $expected"
-          done
-
-          printf 'PASS: static safety checks completed\n'
