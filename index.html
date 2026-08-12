@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#02143f">
+  <title>ENGAZ Lab V2 — ديمو المعامل الذكي</title>
+  <link rel="stylesheet" href="v2-theme.css">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">تخطَّ إلى محتوى الديمو</a>
+  <header class="demo-header">
+    <div class="header-inner">
+      <a class="brand" href="https://engaz.premiumpower-eg.com/" aria-label="العودة إلى موقع إنجاز"><span class="brand-mark" aria-hidden="true"></span><span class="brand-copy"><strong>ENGAZ</strong><small>BUSINESS OPERATING SYSTEM</small></span></a>
+      <nav class="demo-switch" aria-label="التنقل بين ديموهات V2"><a href="https://clinic.engaz.premiumpower-eg.com/">العيادة</a><a href="https://lab.engaz.premiumpower-eg.com/" aria-current="page">المعمل</a><a href="https://automation.engaz.premiumpower-eg.com/">الأتمتة</a></nav>
+      <div class="header-badges" aria-label="حالة الديمو"><span class="v2-badge">Lab V2</span><span class="simulation-badge">محاكاة آمنة</span></div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="أقسام نظام المعمل">
+      <div class="tenant"><span class="tenant-label">مساحة العمل الحالية</span><strong data-tenant-name>معمل تجريبي ENGAZ</strong><span class="live-line"><span class="live-dot" aria-hidden="true"></span> خط التشغيل متصل</span></div>
+      <nav class="side-nav">
+        <button type="button" aria-current="page" data-scroll="lab-overview"><span class="nav-icon" aria-hidden="true">01</span> غرفة العمليات</button>
+        <button type="button" data-scroll="lab-orders"><span class="nav-icon" aria-hidden="true">02</span> الطلبات والنتائج</button>
+        <button type="button" data-scroll="lab-smart"><span class="nav-icon" aria-hidden="true">03</span> الفرز الذكي</button>
+        <button type="button" data-scroll="lab-reports"><span class="nav-icon" aria-hidden="true">04</span> التقارير</button>
+      </nav>
+      <div class="side-note"><strong>مساعدة تشغيلية وليست تشخيصًا</strong>العلامات الذكية في هذا الديمو بيانات تجريبية. أي نتيجة أو تنبيه يحتاج مراجعة واعتماد مختص بشري.</div>
+    </aside>
+
+    <main class="content" id="mainContent" tabindex="-1">
+      <div class="content-inner">
+        <div class="page-head">
+          <div><span class="page-kicker">LAB OPERATIONS / V2</span><h1 class="page-title">العينة من الاستلام إلى النتيجة</h1><p class="page-summary">طابور واضح، زمن إنجاز متوقع، مراجعة بشرية، وإبلاغ المريض من غير مكالمات متكررة.</p></div>
+          <div class="page-actions"><button class="btn" type="button" id="dailyBriefBtn">ملخص الوردية</button><button class="btn btn-primary" type="button" id="newOrderBtn">+ تسجيل عينة</button></div>
+        </div>
+
+        <section id="lab-overview" aria-labelledby="labHeroTitle">
+          <div class="hero-panel">
+            <div class="hero-copy"><span class="hero-eyebrow">SMART LAB DESK / محاكاة</span><h2 id="labHeroTitle">كل عينة لها أولوية، موعد متوقع، ومسؤول واضح.</h2><p>المساعد يلفت النظر لتأخر محتمل أو نتيجة تحتاج مراجعة، لكنه لا يشخّص ولا يعتمد النتيجة بدل المختص.</p><div class="hero-proof"><span>توقع زمن التسليم</span><span>علامات تحتاج مراجعة</span><span>رسائل نتائج تجريبية</span></div></div>
+            <div class="hero-score"><small>التزام زمن التسليم</small><strong id="labScore">94%</strong><p id="labScoreNote">طلب واحد يحتاج أولوية</p></div>
+          </div>
+          <div class="kpi-grid" aria-label="مؤشرات المعمل اليوم">
+            <article class="kpi"><span class="kpi-label">طلبات اليوم</span><strong class="kpi-value" id="kpiOrders">٠</strong><span class="kpi-meta">كل حالات التشغيل</span></article>
+            <article class="kpi"><span class="kpi-label">نتائج جاهزة</span><strong class="kpi-value" id="kpiReady">٠</strong><span class="kpi-meta trend-up">جاهزة للمراجعة والإرسال</span></article>
+            <article class="kpi"><span class="kpi-label">معرضة للتأخير</span><strong class="kpi-value" id="kpiTat">٠</strong><span class="kpi-meta trend-warn">وفق زمن التسليم التجريبي</span></article>
+            <article class="kpi"><span class="kpi-label">إيراد مسجل</span><strong class="kpi-value" id="kpiRevenue">٠</strong><span class="kpi-meta">من طلبات اليوم</span></article>
+          </div>
+        </section>
+
+        <section class="workspace-grid" id="lab-orders" aria-labelledby="ordersTitle">
+          <article class="panel">
+            <div class="panel-head"><div><h2 class="panel-title" id="ordersTitle">طابور العينات والنتائج</h2><span class="panel-subtitle">الفرز الذكي لا يغيّر حالة الطلب بدون موافقة المستخدم</span></div><div class="panel-actions"><div class="filter-row" aria-label="تصفية الطلبات"><button class="filter-btn" type="button" aria-pressed="true" data-filter="all">الكل</button><button class="filter-btn" type="button" aria-pressed="false" data-filter="running">تحت التشغيل</button><button class="filter-btn" type="button" aria-pressed="false" data-filter="ready">جاهز</button><button class="filter-btn" type="button" aria-pressed="false" data-filter="attention">مراجعة</button></div></div></div>
+            <div class="panel-body flush"><div class="table-shell"><table class="data-table"><thead><tr><th>الكود</th><th>المريض</th><th>الفحوصات</th><th>الحالة</th><th>موعد متوقع</th><th>الفرز</th><th>الإجراء</th></tr></thead><tbody id="orderRows"></tbody></table></div></div>
+          </article>
+
+          <div class="stack" id="lab-smart">
+            <article class="smart-card"><span class="smart-label">TAT PRIORITY SIGNAL</span><h3 id="priorityHeadline">جاري تحليل طابور التشغيل</h3><p id="priorityExplanation">يعتمد على زمن الوعد، حالة الطلب، وعلامة المراجعة التجريبية.</p><div class="confidence"><div class="confidence-track" aria-hidden="true"><span id="priorityBar" style="width:0%"></span></div><b id="priorityConfidence">٠٪</b></div><button class="btn btn-block" type="button" id="reviewPriorityBtn">راجع أولوية التشغيل</button></article>
+            <article class="panel"><div class="panel-head"><div><h2 class="panel-title">تنبيهات الجودة</h2><span class="panel-subtitle">قواعد محاكاة تحتاج اعتماد المختص</span></div><span class="status status-info" id="qcCount">٠ تنبيهات</span></div><div class="panel-body"><div class="insight-list" id="qcList"></div></div></article>
+          </div>
+        </section>
+
+        <section class="workspace-grid" id="lab-reports" aria-labelledby="labReportsTitle">
+          <article class="panel">
+            <div class="panel-head"><div><h2 class="panel-title" id="labReportsTitle">أثر إرسال النتائج آليًا</h2><span class="panel-subtitle">مقارنة تجريبية قبل/بعد</span></div><button class="btn btn-small" type="button" id="sendReadyBtn">محاكاة إرسال الجاهز</button></div>
+            <div class="panel-body"><div class="bar-list"><div class="bar-row"><label>مكالمات «النتيجة جاهزة؟»</label><div class="bar-track"><span style="width:88%"></span></div><b>٤٠</b></div><div class="bar-row"><label>بعد الإشعار</label><div class="bar-track"><span style="width:16%"></span></div><b>٦</b></div><div class="bar-row"><label>نتائج في الموعد</label><div class="bar-track"><span style="width:94%"></span></div><b>٩٤٪</b></div><div class="bar-row"><label>استلام رقمي</label><div class="bar-track"><span style="width:82%"></span></div><b>٨٢٪</b></div></div></div>
+          </article>
+          <div class="stack">
+            <article class="panel panel-dark"><div class="panel-head"><div><h2 class="panel-title">توقع السعة</h2><span class="panel-subtitle">من الطابور التجريبي الحالي</span></div></div><div class="panel-body" id="capacitySignal"></div></article>
+            <article class="panel"><div class="panel-head"><div><h2 class="panel-title">إجراءات سريعة</h2><span class="panel-subtitle">لا اتصال خارجي في الديمو</span></div></div><div class="panel-body stack"><button class="btn btn-block" type="button" id="triageBtn">رتّب حسب أولوية المراجعة</button><button class="btn btn-block" type="button" id="nightReportBtn">معاينة تقرير صاحب المعمل</button><button class="btn btn-danger btn-block" type="button" id="resetBtn">إعادة بيانات الديمو</button></div></article>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="launch-gate" id="launchGate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+    <section class="gate-card"><div class="gate-top"><span class="brand-mark" aria-hidden="true"></span><span class="v2-badge">Lab V2</span></div><h1 id="gateTitle">شغّل خط المعمل الذكي</h1><p>اكتب اسم المعمل لتخصيص المحاكاة. كل المرضى والنتائج والعلامات في الصفحة بيانات اصطناعية.</p><p class="demo-warning" role="note">للعرض فقط — لا تدخل بيانات مرضى حقيقية.</p><form class="gate-form" id="launchForm" autocomplete="off"><label class="sr-only" for="businessName">اسم المعمل</label><input id="businessName" name="businessName" maxlength="60" required autocomplete="off" placeholder="مثال: معمل تجريبي ENGAZ"><button class="btn btn-primary" type="submit">افتح النظام</button></form><div class="gate-facts"><div class="gate-fact"><strong>V2 THEME</strong><span>هوية الموقع الصناعية</span></div><div class="gate-fact"><strong>SMART TRIAGE</strong><span>مساعدة لا تستبدل المختص</span></div><div class="gate-fact"><strong>SAFE DATA</strong><span>بيانات عينة محلية فقط</span></div></div></section>
+  </div>
+
+  <dialog id="demoDialog" aria-labelledby="dialogTitle"><div class="dialog-head"><div><span class="dialog-kicker" data-dialog-kicker></span><h2 class="dialog-title" id="dialogTitle" data-dialog-title></h2></div><button class="dialog-close" type="button" data-dialog-close aria-label="إغلاق النافذة">×</button></div><div class="dialog-body" data-dialog-body></div><div class="dialog-actions" data-dialog-actions></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="sr-only" id="liveStatus" aria-live="polite"></div>
+
+  <script src="v2-core.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var E = window.EngazV2;
+    var testPrices = { 'صورة دم كاملة': 180, 'سكر تراكمي': 220, 'وظائف كبد': 260, 'وظائف كلى': 240, 'فيتامين د': 420, 'غدة درقية': 310 };
+    var originalOrders = [
+      { id: 1, code: 'DEMO-0001', name: 'مريض تجريبي ٠١', phone: '00000000001', tests: ['صورة دم كاملة', 'سكر تراكمي'], status: 'ready', eta: 0, amount: 400, flag: 'attention', note: 'قيمة تحتاج مراجعة المختص قبل الاعتماد' },
+      { id: 2, code: 'DEMO-0002', name: 'مريض تجريبي ٠٢', phone: '00000000002', tests: ['وظائف كبد'], status: 'running', eta: 18, amount: 260, flag: 'normal', note: 'ضمن النطاق التشغيلي التجريبي' },
+      { id: 3, code: 'DEMO-0003', name: 'مريض تجريبي ٠٣', phone: '00000000003', tests: ['فيتامين د'], status: 'running', eta: -8, amount: 420, flag: 'delay', note: 'تجاوز وقت التسليم المتوقع' },
+      { id: 4, code: 'DEMO-0004', name: 'مريض تجريبي ٠٤', phone: '00000000004', tests: ['وظائف كلى', 'صورة دم كاملة'], status: 'new', eta: 42, amount: 420, flag: 'normal', note: 'بانتظار بدء التشغيل' },
+      { id: 5, code: 'DEMO-0005', name: 'مريض تجريبي ٠٥', phone: '00000000005', tests: ['غدة درقية'], status: 'ready', eta: 0, amount: 310, flag: 'normal', note: 'جاهز للمراجعة والاعتماد' },
+      { id: 6, code: 'DEMO-0006', name: 'مريض تجريبي ٠٦', phone: '00000000006', tests: ['سكر تراكمي'], status: 'sent', eta: 0, amount: 220, flag: 'normal', note: 'تمت محاكاة إرسال النتيجة' },
+      { id: 7, code: 'DEMO-0007', name: 'مريض تجريبي ٠٧', phone: '00000000007', tests: ['صورة دم كاملة'], status: 'ready', eta: 0, amount: 180, flag: 'attention', note: 'مراجعة يدوية مطلوبة قبل الإرسال' },
+      { id: 8, code: 'DEMO-0008', name: 'مريض تجريبي ٠٨', phone: '00000000008', tests: ['وظائف كبد', 'وظائف كلى'], status: 'new', eta: 55, amount: 500, flag: 'normal', note: 'العينة مسجلة وجاهزة للاستلام' }
+    ];
+    var orders = clone(originalOrders);
+    var filter = 'all';
+
+    function clone(value) { return JSON.parse(JSON.stringify(value)); }
+    function statusText(status) { return { new: 'جديد', running: 'تحت التشغيل', ready: 'جاهز للمراجعة', sent: 'تم الإبلاغ' }[status] || 'جديد'; }
+    function statusClass(status) { return status === 'sent' ? 'status-good' : status === 'ready' ? 'status-info' : status === 'running' ? 'status-warn' : 'status-muted'; }
+    function priorityScore(order) {
+      var score = order.flag === 'attention' ? 88 : order.flag === 'delay' ? 94 : order.status === 'ready' ? 56 : order.status === 'running' ? 44 : 24;
+      if (order.eta < 0) score = Math.min(99, score + Math.abs(order.eta));
+      return score;
+    }
+    function priorityText(order) { var score = priorityScore(order); return score >= 80 ? 'عاجل للمراجعة' : score >= 50 ? 'متوسط' : 'عادي'; }
+    function priorityClass(order) { var score = priorityScore(order); return score >= 80 ? 'risk-high' : score >= 50 ? 'risk-medium' : 'risk-low'; }
+
+    function visibleOrders() {
+      return orders.filter(function (order) {
+        if (filter === 'attention') return order.flag === 'attention' || order.flag === 'delay' || order.eta < 0;
+        if (filter === 'running' || filter === 'ready') return order.status === filter;
+        return true;
+      });
+    }
+
+    function renderOrders() {
+      var rows = E.q('#orderRows'); E.clear(rows);
+      visibleOrders().forEach(function (order) {
+        var tr = E.el('tr');
+        var patient = E.el('td'); patient.append(E.el('span', { className: 'cell-main', text: order.name }), E.el('span', { className: 'cell-sub', text: order.phone }));
+        var tests = E.el('td'); tests.append(E.el('span', { className: 'cell-main', text: order.tests.join(' + ') }), E.el('span', { className: 'cell-sub', text: E.money(order.amount) }));
+        var status = E.el('span', { className: 'status ' + statusClass(order.status), text: statusText(order.status) });
+        var eta = order.status === 'sent' ? 'مكتمل' : order.status === 'ready' ? 'جاهز الآن' : order.eta < 0 ? 'متأخر ' + E.arNumber(Math.abs(order.eta)) + ' د' : 'خلال ' + E.arNumber(order.eta) + ' د';
+        var priority = E.el('span', { className: 'risk ' + priorityClass(order), text: priorityText(order) });
+        var action = E.el('button', { className: 'row-action', text: 'راجع', type: 'button', dataset: { orderId: order.id } });
+        tr.append(E.el('td', { children: [E.el('span', { className: 'cell-main', text: order.code })] }), patient, tests, E.el('td', { children: [status] }), E.el('td', { text: eta }), E.el('td', { children: [priority] }), E.el('td', { children: [action] }));
+        rows.append(tr);
+      });
+      renderMetrics(); renderPriority(); renderQc(); renderCapacity();
+    }
+
+    function renderMetrics() {
+      var ready = orders.filter(function (order) { return order.status === 'ready'; });
+      var atRisk = orders.filter(function (order) { return order.eta < 0 || order.flag === 'attention'; });
+      var revenue = orders.reduce(function (sum, order) { return sum + order.amount; }, 0);
+      E.q('#kpiOrders').textContent = E.arNumber(orders.length);
+      E.q('#kpiReady').textContent = E.arNumber(ready.length);
+      E.q('#kpiTat').textContent = E.arNumber(atRisk.length);
+      E.q('#kpiRevenue').textContent = E.money(revenue);
+      var score = Math.max(68, 100 - atRisk.length * 6);
+      E.q('#labScore').textContent = score + '%';
+      E.q('#labScoreNote').textContent = atRisk.length ? E.arNumber(atRisk.length) + ' طلب يحتاج أولوية' : 'كل الطلبات داخل زمن التسليم';
+    }
+
+    function topPriority() { return orders.filter(function (order) { return order.status !== 'sent'; }).sort(function (a, b) { return priorityScore(b) - priorityScore(a); })[0] || null; }
+    function renderPriority() {
+      var order = topPriority(); var score = order ? priorityScore(order) : 0;
+      E.q('#priorityHeadline').textContent = order ? order.code + ' · ' + order.name : 'لا يوجد طلب يحتاج مراجعة';
+      E.q('#priorityExplanation').textContent = order ? order.note + '. القرار النهائي للمختص.' : 'طابور التشغيل مستقر.';
+      E.q('#priorityBar').style.width = score + '%';
+      E.q('#priorityConfidence').textContent = E.arNumber(score) + '٪';
+      E.q('#reviewPriorityBtn').disabled = !order;
+    }
+
+    function renderQc() {
+      var alerts = orders.filter(function (order) { return order.flag !== 'normal' || order.eta < 0; });
+      E.q('#qcCount').textContent = E.arNumber(alerts.length) + ' تنبيهات';
+      var list = E.q('#qcList'); E.clear(list);
+      alerts.slice(0, 4).forEach(function (order, index) {
+        var item = E.el('div', { className: 'insight' }); var text = E.el('div');
+        text.append(E.el('strong', { text: order.code + ' · ' + order.name }), E.el('p', { text: order.note }));
+        item.append(E.el('span', { className: 'insight-num', text: '0' + (index + 1) }), text); list.append(item);
+      });
+      if (!alerts.length) list.append(E.el('p', { className: 'empty-state', text: 'لا توجد تنبيهات في البيانات الحالية' }));
+    }
+
+    function renderCapacity() {
+      var running = orders.filter(function (order) { return order.status === 'running'; }).length;
+      var queued = orders.filter(function (order) { return order.status === 'new'; }).length;
+      var wrap = E.q('#capacitySignal'); E.clear(wrap);
+      wrap.append(E.el('div', { className: 'result-box', children: [E.el('strong', { text: running >= 3 ? 'ضغط مرتفع خلال الساعة القادمة' : 'السعة مستقرة خلال الساعة القادمة' }), E.el('p', { text: E.arNumber(running) + ' تحت التشغيل و' + E.arNumber(queued) + ' في الطابور. الاقتراح: ابدأ بالطلبات ذات زمن التسليم الأقرب.' })] }));
+    }
+
+    function showOrder(order) {
+      if (!order) return;
+      var content = E.resultBox(order.code + ' · ' + order.name, order.tests.join(' + ') + ' — ' + statusText(order.status) + '.', [order.note, 'درجة أولوية تشغيلية ' + E.arNumber(priorityScore(order)) + '٪.', 'أي علامة غير طبيعية تحتاج اعتماد المختص قبل الإبلاغ.']);
+      var actions = [];
+      if (order.status === 'new') actions.push({ label: 'ابدأ التشغيل', className: 'btn-primary', onClick: function () { order.status = 'running'; order.eta = 30; renderOrders(); E.toast('بدأ التشغيل داخل المحاكاة.', 'success'); } });
+      if (order.status === 'running') actions.push({ label: 'علّم النتيجة جاهزة', className: 'btn-primary', onClick: function () { order.status = 'ready'; order.eta = 0; renderOrders(); E.toast('النتيجة جاهزة للمراجعة البشرية.', 'success'); } });
+      if (order.status === 'ready') actions.push({ label: 'راجع واعتمد تجريبيًا', className: 'btn-primary', onClick: function () { order.flag = 'normal'; order.note = 'تمت المراجعة البشرية داخل المحاكاة'; renderOrders(); E.toast('تم تسجيل المراجعة البشرية.', 'success'); } }, { label: 'معاينة رسالة النتيجة', close: false, onClick: function () { previewMessage(order); } });
+      if (order.status === 'sent') actions.push({ label: 'معاينة سجل الإبلاغ', onClick: function () { E.toast('سجل تجريبي: تم الإبلاغ اليوم بدون اتصال خارجي.', 'success'); } });
+      E.showDialog({ kicker: 'ORDER REVIEW', title: 'مراجعة طلب المعمل', content: content, actions: actions });
+    }
+
+    function previewMessage(order) {
+      var content = E.resultBox('معاينة رسالة عربية', 'أهلًا ' + order.name + '، نتيجة الطلب ' + order.code + ' جاهزة بعد مراجعة المختص. برجاء استخدام رابط الاستلام الآمن المخصص للمعمل.', ['هذه معاينة نصية فقط.', 'لا رابط حقيقي ولا رسالة واتساب فعلية.', 'النتيجة الطبية نفسها لا تظهر في الرسالة.']);
+      E.showDialog({ kicker: 'COMMUNICATION PREVIEW', title: 'رسالة النتيجة', content: content });
+    }
+
+    function openNewOrder() {
+      var form = E.el('form', { className: 'form-grid', attrs: { novalidate: 'novalidate', autocomplete: 'off' } });
+      form.addEventListener('submit', function (event) { event.preventDefault(); });
+      var warning = E.el('p', { className: 'demo-warning full', text: 'للعرض فقط — لا تدخل بيانات مرضى حقيقية.', attrs: { role: 'note' } });
+      var name = E.field({ id: 'patientName', label: 'اسم المريض الاصطناعي', required: true, maxLength: 60, placeholder: 'الاسم الاصطناعي بالكامل', attrs: { autocomplete: 'off' } });
+      var phone = E.field({ id: 'patientPhone', label: 'رقم الموبايل الاصطناعي', type: 'tel', required: true, maxLength: 15, placeholder: '00000000000', attrs: { inputmode: 'tel', autocomplete: 'off' } });
+      var testOne = E.field({ id: 'testOne', label: 'الفحص الأول', type: 'select', options: Object.keys(testPrices).map(function (value) { return { label: value + ' · ' + E.money(testPrices[value]), value: value }; }) });
+      var testTwo = E.field({ id: 'testTwo', label: 'فحص إضافي', type: 'select', options: [{ label: 'بدون', value: '' }].concat(Object.keys(testPrices).map(function (value) { return { label: value, value: value }; })) });
+      var error = E.el('p', { className: 'field-error full', attrs: { role: 'alert' } });
+      form.append(warning, name.wrap, phone.wrap, testOne.wrap, testTwo.wrap, error);
+      E.showDialog({ kicker: 'SMART ACCESSION', title: 'تسجيل عينة جديدة', content: form, actions: [
+        { label: 'سجّل وولّد الكود', className: 'btn-primary', close: false, onClick: function () {
+          var patient = E.cleanText(name.input.value, 60); var mobile = E.phoneDigits(phone.input.value); var first = testPrices[testOne.input.value] ? testOne.input.value : ''; var second = testPrices[testTwo.input.value] ? testTwo.input.value : '';
+          if (patient.length < 2 || !E.validPhone(mobile) || !first) { error.textContent = 'اكتب اسمًا صحيحًا ورقمًا من ١٠–١٥ رقمًا واختر فحصًا.'; return; }
+          var tests = [first]; if (second && second !== first) tests.push(second);
+          var amount = tests.reduce(function (sum, value) { return sum + testPrices[value]; }, 0); var next = orders.length + 1; var code = 'DEMO-' + String(next).padStart(4, '0');
+          orders.push({ id: Date.now(), code: code, name: patient, phone: mobile, tests: tests, status: 'new', eta: 48, amount: amount, flag: 'normal', note: 'تم التحقق من اكتمال بيانات العينة تجريبيًا' });
+          renderOrders(); E.closeDialog(); E.toast('تم تسجيل ' + code + ' — رابط الاستلام مجرد محاكاة.', 'success'); E.announce('تم تسجيل عينة جديدة باسم ' + patient);
+        } }, { label: 'إلغاء' }
+      ] });
+      window.setTimeout(function () { name.input.focus(); }, 50);
+    }
+
+    function reviewPriority() { var order = topPriority(); if (order) showOrder(order); }
+    function sortByPriority() { orders.sort(function (a, b) { return priorityScore(b) - priorityScore(a); }); renderOrders(); E.toast('تم ترتيب العرض فقط؛ لم تتغير نتائج أو حالات الطلبات.', 'success'); }
+
+    function sendReady() {
+      var ready = orders.filter(function (order) { return order.status === 'ready' && order.flag === 'normal'; });
+      var blocked = orders.filter(function (order) { return order.status === 'ready' && order.flag !== 'normal'; });
+      ready.forEach(function (order) { order.status = 'sent'; order.note = 'تمت محاكاة إرسال إشعار النتيجة'; });
+      renderOrders();
+      E.showDialog({ kicker: 'BATCH COMMUNICATION', title: 'محاكاة إرسال النتائج', content: E.resultBox('تم تجهيز ' + E.arNumber(ready.length) + ' رسائل', 'لم يتم إرسال أي اتصال خارجي.', [E.arNumber(blocked.length) + ' نتيجة بقيت متوقفة لحين المراجعة البشرية.', 'لا تحتوي الرسالة على تفاصيل طبية.', 'يتم تسجيل الإجراء في سجل تجريبي.']) });
+    }
+
+    function dailyBrief() {
+      var top = topPriority(); var running = orders.filter(function (order) { return order.status === 'running'; }).length;
+      E.showDialog({ kicker: 'SHIFT COPILOT', title: 'ملخص الوردية', content: E.resultBox('ما يحتاج انتباهك الآن', 'يوجد ' + E.arNumber(running) + ' طلب تحت التشغيل. ' + (top ? 'ابدأ بمراجعة ' + top.code + '.' : 'لا توجد أولوية معلقة.'), ['راجع التنبيهات قبل إرسال أي نتيجة.', 'ابدأ بالطلب الأقرب لوقت التسليم.', 'المساعد لا يعتمد نتيجة طبية.']) });
+    }
+
+    function nightReport() {
+      var sent = orders.filter(function (order) { return order.status === 'sent'; }).length; var revenue = orders.reduce(function (sum, order) { return sum + order.amount; }, 0);
+      E.showDialog({ kicker: 'OWNER REPORT / PREVIEW', title: 'تقرير صاحب المعمل', content: E.resultBox('ملخص تجريبي على الموبايل', E.arNumber(orders.length) + ' طلبات بقيمة ' + E.money(revenue) + '، و' + E.arNumber(sent) + ' إشعارات نتائج مكتملة.', ['مكالمات الاستعلام انخفضت تجريبيًا من ٤٠ إلى ٦.', 'كل التنبيهات الطبية تحتاج مراجعة مختص.', 'هذه معاينة داخل الصفحة فقط.']) });
+    }
+
+    function resetDemo() { orders = clone(originalOrders); filter = 'all'; E.qa('[data-filter]').forEach(function (button) { button.setAttribute('aria-pressed', button.dataset.filter === 'all' ? 'true' : 'false'); }); renderOrders(); E.toast('رجعت بيانات Lab V2 للوضع الأصلي.', 'success'); }
+
+    E.bindGate('معمل تجريبي ENGAZ'); E.bindDialogClose(); renderOrders();
+    E.qa('[data-scroll]').forEach(function (button) { button.addEventListener('click', function () { E.qa('[data-scroll]').forEach(function (item) { item.removeAttribute('aria-current'); }); button.setAttribute('aria-current', 'page'); var target = E.q('#' + button.dataset.scroll); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
+    E.qa('[data-filter]').forEach(function (button) { button.addEventListener('click', function () { filter = ['all', 'running', 'ready', 'attention'].indexOf(button.dataset.filter) >= 0 ? button.dataset.filter : 'all'; E.qa('[data-filter]').forEach(function (item) { item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); }); renderOrders(); }); });
+    E.q('#orderRows').addEventListener('click', function (event) { var button = event.target.closest('[data-order-id]'); if (!button) return; var id = Number(button.dataset.orderId); showOrder(orders.find(function (order) { return order.id === id; })); });
+    E.q('#newOrderBtn').addEventListener('click', openNewOrder); E.q('#dailyBriefBtn').addEventListener('click', dailyBrief); E.q('#reviewPriorityBtn').addEventListener('click', reviewPriority); E.q('#triageBtn').addEventListener('click', sortByPriority); E.q('#sendReadyBtn').addEventListener('click', sendReady); E.q('#nightReportBtn').addEventListener('click', nightReport); E.q('#resetBtn').addEventListener('click', resetDemo);
+  }());
+  </script>
+</body>
+</html>
