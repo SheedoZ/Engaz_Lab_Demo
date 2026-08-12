@@ -28,7 +28,7 @@ jobs:
           const vm = require('node:vm');
 
           const required = new Set([
-            '.gitattributes', '.gitignore', '.nojekyll', 'CNAME', 'README.md',
+            '.gitattributes', '.gitignore', '.nojekyll', 'CNAME', 'README.md', 'PROJECT_GUIDE.md',
             'index.html', 'v2-core.js', 'v2-theme.css',
             '.github/workflows/validate.yml'
           ]);
