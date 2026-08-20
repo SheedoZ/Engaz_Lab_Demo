@@ -7,6 +7,28 @@
   <meta name="theme-color" content="#02143f">
   <title>ENGAZ Lab V2 — ديمو المعامل الذكي</title>
   <link rel="stylesheet" href="v2-theme.css">
+  <style>
+    .order-tools { display:grid; grid-template-columns:minmax(220px,1fr) auto; gap:10px; align-items:center; width:100%; }
+    .order-search { min-height:40px; width:100%; border:1px solid #cbd6e0; background:#f7fafc; color:var(--ink); padding:8px 12px; font-size:11px; font-weight:700; outline:0; }
+    .order-search:focus { border-color:var(--cyan); background:#fff; box-shadow:0 0 0 3px rgba(8,189,232,.1); }
+    .filter-count { display:inline-grid; place-items:center; min-width:20px; min-height:20px; margin-inline-start:5px; padding:1px 5px; border:1px solid currentColor; font-size:8px; line-height:1; }
+    .mobile-order-list { display:none; }
+    .mobile-order-card { padding:16px; border-bottom:1px solid #e3e9ef; background:#fff; }
+    .mobile-order-card:last-child { border-bottom:0; }
+    .mobile-order-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .mobile-order-code { color:#075394; font-size:11px; font-weight:900; direction:ltr; }
+    .mobile-order-name { display:block; margin-top:4px; color:var(--ink); font-size:14px; font-weight:900; }
+    .mobile-order-tests { margin-top:10px; color:#536477; font-size:11px; }
+    .mobile-order-meta { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+    .mobile-order-action { width:100%; margin-top:12px; }
+    @media (max-width:700px) {
+      .order-tools { grid-template-columns:1fr; }
+      .filter-row { overflow-x:auto; flex-wrap:nowrap; padding-bottom:3px; }
+      .filter-btn { min-width:max-content; }
+      .table-shell { display:none; }
+      .mobile-order-list { display:block; }
+    }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#mainContent">تخطَّ إلى محتوى الديمو</a>
@@ -52,8 +74,19 @@
 
         <section class="workspace-grid" id="lab-orders" aria-labelledby="ordersTitle">
           <article class="panel">
-            <div class="panel-head"><div><h2 class="panel-title" id="ordersTitle">طابور العينات والنتائج</h2><span class="panel-subtitle">الفرز الذكي لا يغيّر حالة الطلب بدون موافقة المستخدم</span></div><div class="panel-actions"><div class="filter-row" aria-label="تصفية الطلبات"><button class="filter-btn" type="button" aria-pressed="true" data-filter="all">الكل</button><button class="filter-btn" type="button" aria-pressed="false" data-filter="running">تحت التشغيل</button><button class="filter-btn" type="button" aria-pressed="false" data-filter="ready">جاهز</button><button class="filter-btn" type="button" aria-pressed="false" data-filter="attention">مراجعة</button></div></div></div>
-            <div class="panel-body flush"><div class="table-shell"><table class="data-table"><thead><tr><th>الكود</th><th>المريض</th><th>الفحوصات</th><th>الحالة</th><th>موعد متوقع</th><th>الفرز</th><th>الإجراء</th></tr></thead><tbody id="orderRows"></tbody></table></div></div>
+            <div class="panel-head"><div><h2 class="panel-title" id="ordersTitle">طابور العينات والنتائج</h2><span class="panel-subtitle">الفرز الذكي لا يغيّر حالة الطلب بدون موافقة المستخدم</span></div></div>
+            <div class="panel-body">
+              <div class="order-tools">
+                <input class="order-search" id="orderSearch" type="search" autocomplete="off" placeholder="ابحث بالكود، اسم المريض، رقم الهاتف، أو الفحص" aria-label="البحث في طلبات المعمل">
+                <div class="filter-row" aria-label="تصفية الطلبات">
+                  <button class="filter-btn" type="button" aria-pressed="true" data-filter="all">الكل <span class="filter-count" data-filter-count="all">٠</span></button>
+                  <button class="filter-btn" type="button" aria-pressed="false" data-filter="running">تحت التشغيل <span class="filter-count" data-filter-count="running">٠</span></button>
+                  <button class="filter-btn" type="button" aria-pressed="false" data-filter="ready">جاهز <span class="filter-count" data-filter-count="ready">٠</span></button>
+                  <button class="filter-btn" type="button" aria-pressed="false" data-filter="attention">مراجعة <span class="filter-count" data-filter-count="attention">٠</span></button>
+                </div>
+              </div>
+            </div>
+            <div class="panel-body flush"><div class="table-shell"><table class="data-table"><thead><tr><th>الكود</th><th>المريض</th><th>الفحوصات</th><th>الحالة</th><th>موعد متوقع</th><th>الفرز</th><th>الإجراء</th></tr></thead><tbody id="orderRows"></tbody></table></div><div class="mobile-order-list" id="orderCards" aria-label="طلبات المعمل على الهاتف"></div></div>
           </article>
 
           <div class="stack" id="lab-smart">
@@ -101,6 +134,7 @@
     ];
     var orders = clone(originalOrders);
     var filter = 'all';
+    var searchQuery = '';
 
     function clone(value) { return JSON.parse(JSON.stringify(value)); }
     function statusText(status) { return { new: 'جديد', running: 'تحت التشغيل', ready: 'جاهز للمراجعة', sent: 'تم الإبلاغ' }[status] || 'جديد'; }
@@ -112,29 +146,65 @@
     }
     function priorityText(order) { var score = priorityScore(order); return score >= 80 ? 'عاجل للمراجعة' : score >= 50 ? 'متوسط' : 'عادي'; }
     function priorityClass(order) { var score = priorityScore(order); return score >= 80 ? 'risk-high' : score >= 50 ? 'risk-medium' : 'risk-low'; }
+    function needsAttention(order) { return order.flag === 'attention' || order.flag === 'delay' || order.eta < 0; }
+    function matchesSearch(order) {
+      if (!searchQuery) return true;
+      var haystack = [order.code, order.name, order.phone, order.tests.join(' '), statusText(order.status), order.note].join(' ').toLowerCase();
+      return haystack.indexOf(searchQuery) >= 0;
+    }
+    function etaText(order) { return order.status === 'sent' ? 'مكتمل' : order.status === 'ready' ? 'جاهز الآن' : order.eta < 0 ? 'متأخر ' + E.arNumber(Math.abs(order.eta)) + ' د' : 'خلال ' + E.arNumber(order.eta) + ' د'; }
 
     function visibleOrders() {
       return orders.filter(function (order) {
-        if (filter === 'attention') return order.flag === 'attention' || order.flag === 'delay' || order.eta < 0;
-        if (filter === 'running' || filter === 'ready') return order.status === filter;
-        return true;
+        var inFilter = filter === 'attention' ? needsAttention(order) : filter === 'running' || filter === 'ready' ? order.status === filter : true;
+        return inFilter && matchesSearch(order);
       });
     }
 
+    function renderFilterCounts() {
+      var counts = {
+        all: orders.length,
+        running: orders.filter(function (order) { return order.status === 'running'; }).length,
+        ready: orders.filter(function (order) { return order.status === 'ready'; }).length,
+        attention: orders.filter(needsAttention).length
+      };
+      Object.keys(counts).forEach(function (key) {
+        var node = E.q('[data-filter-count="' + key + '"]');
+        if (node) node.textContent = E.arNumber(counts[key]);
+      });
+    }
+
+    function renderMobileCard(order) {
+      var card = E.el('article', { className: 'mobile-order-card' });
+      var head = E.el('div', { className: 'mobile-order-head' });
+      var identity = E.el('div');
+      identity.append(E.el('span', { className: 'mobile-order-code', text: order.code }), E.el('strong', { className: 'mobile-order-name', text: order.name }), E.el('span', { className: 'cell-sub', text: order.phone }));
+      head.append(identity, E.el('span', { className: 'status ' + statusClass(order.status), text: statusText(order.status) }));
+      var meta = E.el('div', { className: 'mobile-order-meta' });
+      meta.append(E.el('span', { className: 'risk ' + priorityClass(order), text: priorityText(order) }), E.el('span', { className: 'status status-muted', text: etaText(order) }));
+      card.append(head, E.el('p', { className: 'mobile-order-tests', text: order.tests.join(' + ') + ' · ' + E.money(order.amount) }), meta, E.el('button', { className: 'btn mobile-order-action', text: 'راجع الطلب', type: 'button', dataset: { orderId: order.id } }));
+      return card;
+    }
+
     function renderOrders() {
-      var rows = E.q('#orderRows'); E.clear(rows);
-      visibleOrders().forEach(function (order) {
+      var rows = E.q('#orderRows'); var cards = E.q('#orderCards'); E.clear(rows); E.clear(cards);
+      var visible = visibleOrders();
+      visible.forEach(function (order) {
         var tr = E.el('tr');
         var patient = E.el('td'); patient.append(E.el('span', { className: 'cell-main', text: order.name }), E.el('span', { className: 'cell-sub', text: order.phone }));
         var tests = E.el('td'); tests.append(E.el('span', { className: 'cell-main', text: order.tests.join(' + ') }), E.el('span', { className: 'cell-sub', text: E.money(order.amount) }));
         var status = E.el('span', { className: 'status ' + statusClass(order.status), text: statusText(order.status) });
-        var eta = order.status === 'sent' ? 'مكتمل' : order.status === 'ready' ? 'جاهز الآن' : order.eta < 0 ? 'متأخر ' + E.arNumber(Math.abs(order.eta)) + ' د' : 'خلال ' + E.arNumber(order.eta) + ' د';
         var priority = E.el('span', { className: 'risk ' + priorityClass(order), text: priorityText(order) });
         var action = E.el('button', { className: 'row-action', text: 'راجع', type: 'button', dataset: { orderId: order.id } });
-        tr.append(E.el('td', { children: [E.el('span', { className: 'cell-main', text: order.code })] }), patient, tests, E.el('td', { children: [status] }), E.el('td', { text: eta }), E.el('td', { children: [priority] }), E.el('td', { children: [action] }));
-        rows.append(tr);
+        tr.append(E.el('td', { children: [E.el('span', { className: 'cell-main', text: order.code })] }), patient, tests, E.el('td', { children: [status] }), E.el('td', { text: etaText(order) }), E.el('td', { children: [priority] }), E.el('td', { children: [action] }));
+        rows.append(tr); cards.append(renderMobileCard(order));
       });
-      renderMetrics(); renderPriority(); renderQc(); renderCapacity();
+      if (!visible.length) {
+        var message = searchQuery ? 'لا توجد طلبات مطابقة للبحث الحالي' : 'لا توجد طلبات في هذا التصنيف';
+        var tr = E.el('tr'); tr.append(E.el('td', { className: 'empty-state', text: message, attrs: { colspan: '7' } })); rows.append(tr);
+        cards.append(E.el('p', { className: 'empty-state', text: message }));
+      }
+      renderFilterCounts(); renderMetrics(); renderPriority(); renderQc(); renderCapacity();
     }
 
     function renderMetrics() {
@@ -190,9 +260,20 @@
       E.showDialog({ kicker: 'ORDER REVIEW', title: 'مراجعة طلب المعمل', content: content, actions: actions });
     }
 
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function () { E.toast('تم نسخ الرسالة.', 'success'); }, function () { E.toast('تعذر النسخ تلقائيًا.', 'warning'); });
+        return;
+      }
+      var area = document.createElement('textarea'); area.value = text; area.setAttribute('readonly', 'readonly'); area.style.position = 'fixed'; area.style.opacity = '0'; document.body.append(area); area.select();
+      try { document.execCommand('copy'); E.toast('تم نسخ الرسالة.', 'success'); } catch (error) { E.toast('تعذر النسخ تلقائيًا.', 'warning'); }
+      area.remove();
+    }
+
     function previewMessage(order) {
-      var content = E.resultBox('معاينة رسالة عربية', 'أهلًا ' + order.name + '، نتيجة الطلب ' + order.code + ' جاهزة بعد مراجعة المختص. برجاء استخدام رابط الاستلام الآمن المخصص للمعمل.', ['هذه معاينة نصية فقط.', 'لا رابط حقيقي ولا رسالة واتساب فعلية.', 'النتيجة الطبية نفسها لا تظهر في الرسالة.']);
-      E.showDialog({ kicker: 'COMMUNICATION PREVIEW', title: 'رسالة النتيجة', content: content });
+      var message = 'أهلًا ' + order.name + '، نتيجة الطلب ' + order.code + ' جاهزة بعد مراجعة المختص. برجاء استخدام رابط الاستلام الآمن المخصص للمعمل.';
+      var content = E.resultBox('معاينة رسالة عربية', message, ['هذه معاينة نصية فقط.', 'لا رابط حقيقي ولا رسالة واتساب فعلية.', 'النتيجة الطبية نفسها لا تظهر في الرسالة.']);
+      E.showDialog({ kicker: 'COMMUNICATION PREVIEW', title: 'رسالة النتيجة', content: content, actions: [{ label: 'نسخ الرسالة', className: 'btn-primary', close: false, onClick: function () { copyText(message); } }, { label: 'إغلاق' }] });
     }
 
     function openNewOrder() {
@@ -239,12 +320,17 @@
       E.showDialog({ kicker: 'OWNER REPORT / PREVIEW', title: 'تقرير صاحب المعمل', content: E.resultBox('ملخص تجريبي على الموبايل', E.arNumber(orders.length) + ' طلبات بقيمة ' + E.money(revenue) + '، و' + E.arNumber(sent) + ' إشعارات نتائج مكتملة.', ['مكالمات الاستعلام انخفضت تجريبيًا من ٤٠ إلى ٦.', 'كل التنبيهات الطبية تحتاج مراجعة مختص.', 'هذه معاينة داخل الصفحة فقط.']) });
     }
 
-    function resetDemo() { orders = clone(originalOrders); filter = 'all'; E.qa('[data-filter]').forEach(function (button) { button.setAttribute('aria-pressed', button.dataset.filter === 'all' ? 'true' : 'false'); }); renderOrders(); E.toast('رجعت بيانات Lab V2 للوضع الأصلي.', 'success'); }
+    function resetDemo() {
+      orders = clone(originalOrders); filter = 'all'; searchQuery = ''; E.q('#orderSearch').value = '';
+      E.qa('[data-filter]').forEach(function (button) { button.setAttribute('aria-pressed', button.dataset.filter === 'all' ? 'true' : 'false'); }); renderOrders(); E.toast('رجعت بيانات Lab V2 للوضع الأصلي.', 'success');
+    }
 
     E.bindGate('معمل تجريبي ENGAZ'); E.bindDialogClose(); renderOrders();
     E.qa('[data-scroll]').forEach(function (button) { button.addEventListener('click', function () { E.qa('[data-scroll]').forEach(function (item) { item.removeAttribute('aria-current'); }); button.setAttribute('aria-current', 'page'); var target = E.q('#' + button.dataset.scroll); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
     E.qa('[data-filter]').forEach(function (button) { button.addEventListener('click', function () { filter = ['all', 'running', 'ready', 'attention'].indexOf(button.dataset.filter) >= 0 ? button.dataset.filter : 'all'; E.qa('[data-filter]').forEach(function (item) { item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); }); renderOrders(); }); });
-    E.q('#orderRows').addEventListener('click', function (event) { var button = event.target.closest('[data-order-id]'); if (!button) return; var id = Number(button.dataset.orderId); showOrder(orders.find(function (order) { return order.id === id; })); });
+    E.q('#orderSearch').addEventListener('input', function (event) { searchQuery = E.cleanText(event.target.value, 80).toLowerCase(); renderOrders(); });
+    function handleOrderClick(event) { var button = event.target.closest('[data-order-id]'); if (!button) return; var id = Number(button.dataset.orderId); showOrder(orders.find(function (order) { return order.id === id; })); }
+    E.q('#orderRows').addEventListener('click', handleOrderClick); E.q('#orderCards').addEventListener('click', handleOrderClick);
     E.q('#newOrderBtn').addEventListener('click', openNewOrder); E.q('#dailyBriefBtn').addEventListener('click', dailyBrief); E.q('#reviewPriorityBtn').addEventListener('click', reviewPriority); E.q('#triageBtn').addEventListener('click', sortByPriority); E.q('#sendReadyBtn').addEventListener('click', sendReady); E.q('#nightReportBtn').addEventListener('click', nightReport); E.q('#resetBtn').addEventListener('click', resetDemo);
   }());
   </script>
