@@ -2,7 +2,6 @@
   'use strict';
 
   var toastTimer = 0;
-  var THEME_KEY = 'engaz-lab-theme';
 
   function q(selector, root) {
     return (root || document).querySelector(selector);
@@ -320,19 +319,6 @@
     document.head.append(style);
   }
 
-  function readSavedTheme() {
-    try {
-      var saved = window.localStorage.getItem(THEME_KEY);
-      return saved === 'light' ? 'light' : 'dark';
-    } catch (error) {
-      return 'dark';
-    }
-  }
-
-  function saveTheme(theme) {
-    try { window.localStorage.setItem(THEME_KEY, theme); } catch (error) { /* storage may be unavailable */ }
-  }
-
   function updateThemeButton(theme) {
     var button = q('#themeToggle');
     if (!button) return;
@@ -343,18 +329,17 @@
     button.setAttribute('aria-pressed', isLight ? 'true' : 'false');
   }
 
-  function applyTheme(theme, persist) {
+  function applyTheme(theme) {
     var safeTheme = theme === 'light' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', safeTheme);
     var meta = q('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', safeTheme === 'light' ? '#f5f5f7' : '#09090b');
     updateThemeButton(safeTheme);
-    if (persist) saveTheme(safeTheme);
   }
 
   function initThemeToggle() {
     injectThemeStyles();
-    applyTheme(readSavedTheme(), false);
+    applyTheme('dark');
     if (q('#themeToggle')) return;
     var host = q('.header-badges') || q('.header-inner');
     if (!host) return;
@@ -365,11 +350,11 @@
       attrs: { 'aria-pressed': 'false' }
     });
     host.prepend(button);
-    updateThemeButton(document.documentElement.getAttribute('data-theme') || 'dark');
+    updateThemeButton('dark');
     button.addEventListener('click', function () {
       var current = document.documentElement.getAttribute('data-theme') || 'dark';
       var next = current === 'light' ? 'dark' : 'light';
-      applyTheme(next, true);
+      applyTheme(next);
       toast(next === 'light' ? 'تم تفعيل الوضع الفاتح.' : 'تم تفعيل الوضع الداكن.', 'success');
     });
   }
